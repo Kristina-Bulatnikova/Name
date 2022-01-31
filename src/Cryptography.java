@@ -198,7 +198,7 @@ public class Cryptography {
             switchSymbol(text, path);
         }
     }
-    public static int searchKey(ArrayList<Character> text) {
+    public static int searchKeyForTwoSymbols(ArrayList<Character> text) {
         HashMap<String, Integer> mapOfCharacter = new HashMap<>();
         StringBuilder stringBuilder = new StringBuilder();
         Integer count;
@@ -235,6 +235,50 @@ public class Cryptography {
         }
         return spacePlace + 1;
     }
+    public static ArrayList<Character> decryption(ArrayList<Character> text, Integer shift) {
+        ArrayList<Character> newText = new ArrayList<>();
+        int shiftWithCircle;
+        for (Character character : text) {
+            for (int j = 0; j < alphabet.size(); j++) {
+                if (alphabet.contains(character)) {
+                    if (alphabet.get(j).equals(character)) {
+                        if (j - shift < 0) {
+                            shiftWithCircle = (j - shift) + alphabet.size();
+                            newText.add(alphabet.get(shiftWithCircle));
+                        } else {
+                            newText.add(alphabet.get(j - shift));
+                        }
+                        break;
+                    }
+                } else {
+                    newText.add(character);
+                    break;
+                }
+            }
+        }
+        return newText;
+    }
+    public static int searchKeyForSpace (ArrayList<Character> text) {
+        int spacePlace = 0;
+        char  character = 0;
+        int counter = 0;
+        ArrayList<Character> clearText = clearList(text);
+        HashMap<Character, Integer> textInMap = counterCharsInMap(clearText);
+        for (Map.Entry<Character, Integer> e : textInMap.entrySet()) {
+            if (e.getValue() > counter) {
+                counter = e.getValue();
+                character = e.getKey();
+            }
+        }
+
+        for (int i = 0; i < alphabet.size(); i++) {
+            if (character == alphabet.get(i)) {
+                spacePlace = i;
+                break;
+            }
+        }
+        return spacePlace + 1;
+    }
 
     public static void encryption(String path) {
         System.out.println("Можем сдвинуть все символы на 1 - 73 позиций. На сколько сдвинем?");
@@ -262,50 +306,35 @@ public class Cryptography {
     }
     public static void decryptionBruteForce(String path) {
         ArrayList<Character> text = readingFile(path);
-        ArrayList<Character> newText = new ArrayList<>();
+
         System.out.println("У вас есть ключ к тексту? (Да) / (нет)");
         String haveKey = gettingString();
         int shift = 0;
         if (haveKey.equalsIgnoreCase("да")) {
-            System.out.println("Введите символ зашифрованного алфавита и реального без пробела с учетом регистра.");
-            char[] letter = gettingString().toCharArray();
-            int wrongIndex = 0;
-            int rightIndex = 0;
-            for (int i = 0; i < alphabet.size(); i++) {
-                if (letter[0] == alphabet.get(i)) {
-                    wrongIndex = i;
-                }
-                if (letter[1] == alphabet.get(i)) {
-                    rightIndex = i;
-                }
-            }
-            shift = wrongIndex - rightIndex;
+            System.out.println("Введите ключ - число.");
+            shift = Integer.parseInt(gettingString());
         } else {
             System.out.println("Подбираем ключ к шифру.");
-            shift = searchKey(text);
+            shift = searchKeyForTwoSymbols(text);
         }
 
         System.out.println("Расшифровываем текст.");
-        int shiftWithCircle;
-        for (Character character : text) {
-            for (int j = 0; j < alphabet.size(); j++) {
-                if (alphabet.contains(character)) {
-                    if (alphabet.get(j).equals(character)) {
-                        if (j - shift < 0) {
-                            shiftWithCircle = (j - shift) + alphabet.size();
-                            newText.add(alphabet.get(shiftWithCircle));
-                        } else {
-                            newText.add(alphabet.get(j - shift));
-                        }
-                        break;
-                    }
-                } else {
-                    newText.add(character);
-                    break;
-                }
-            }
+        ArrayList<Character> newText = decryption(text, shift);
+
+        System.out.println("Выводим часть текста в консоль.");
+        for (int i = 0; i < text.size() / 10; i++) {
+            System.out.print(newText.get(i));
+        }
+        System.out.println();
+        System.out.println("Текст читаемый? (Да) / (нет)");
+        String isReading = gettingString();
+        if (!isReading.equalsIgnoreCase("да")) {
+            System.out.println("Подбираем другой ключ к шифру.");
+            shift = searchKeyForSpace(text);
+            newText = decryption(text, shift);
         }
         actionAfterEncryption(newText, path);
+
         anotherAction();
     }
     public static void decryptionBasedOnStatistics(String path) {
@@ -346,7 +375,7 @@ public class Cryptography {
             }
         }
         System.out.println("Выводим часть текста в консоль.");
-        for (int i = 0; i < 5000; i++) {
+        for (int i = 0; i < text.size() / 10; i++) {
             System.out.print(text.get(i));
         }
         System.out.println();
