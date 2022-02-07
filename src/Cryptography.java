@@ -383,3 +383,4 @@ public class Cryptography {
         isCorrectText(text, path);
     }
 }
+//C:\Users\semru\OneDrive\Рабочий стол\Новый текстовый документ (3).txt
